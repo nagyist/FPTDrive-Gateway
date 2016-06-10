@@ -1,0 +1,48 @@
+[
+	{
+		"id": "f24a5bdf.e4c97",
+		"type": "http in",
+		"z": "d41d86f4.6fb95",
+		"name": "",
+		"url": "/aws/certs",
+		"method": "get",
+		"swaggerDoc": "",
+		"x": 115,
+		"y": 87,
+		"wires": [["cdcc3fa8.e9f598"]
+		]
+	}, {
+		"id": "cdcc3fa8.e9f598",
+		"type": "exec",
+		"z": "d41d86f4.6fb95",
+		"command": "ls ../awsCerts",
+		"addpay": true,
+		"append": "",
+		"useSpawn": "",
+		"name": "GetCertificates",
+		"x": 303,
+		"y": 86,
+		"wires": [["d223eb48.a3bde"],[],[]
+		]
+	}, {
+		"id": "6a5f8552.da9244",
+		"type": "http response",
+		"z": "d41d86f4.6fb95",
+		"name": "",
+		"x": 682,
+		"y": 87,
+		"wires": []
+	}, {
+		"id": "d223eb48.a3bde",
+		"type": "function",
+		"z": "d41d86f4.6fb95",
+		"name": "convertToJSON",
+		"func": "//msg.payload = msg.payload.replace(/..\\/aws\\/certs\\//g,\"\").replace(/\\//g, \"\").replace(/\\r\\n/g, \"\\n\").split(\"\\n\");\n//return msg;\n\nvar files = msg.payload;\n\nfiles = files.replace(\":\",\"\");\nfiles = files.replace(\"../awsCerts\",\"\");\nfiles = files.replace(\"-certificate.pem.crt\", \"\");\nfiles = files.replace(\"-private.pem.key\",\"\");\nfiles = files.replace(\"-public.pem.key\",\"\");\nfiles = files.replace(\"root-CA.crt\",\"\");\n\nfiles = files.replace(/\\r\\n/g, \"\\n\");\nfiles = files.split(\"\\n\");\n\n\nvar uniqueKeys = files.filter(function(elem, pos) {\n    return files.indexOf(elem) == pos;\n})\n\n\nmsg.payload = uniqueKeys;\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 505,
+		"y": 88,
+		"wires": [["6a5f8552.da9244"]
+		]
+	}
+]
