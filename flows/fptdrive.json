@@ -1,5 +1,161 @@
 [
 	{
+		"id": "4d2e8b2d.5ca344",
+		"type": "websocket-client",
+		"z": "9ab87d77.4636",
+		"path": "ws://localhost:8001/",
+		"wholemsg": "false"
+	}, {
+		"id": "a6a2dce4.9e43a8",
+		"type": "aws-iot-device",
+		"z": "9ab87d77.4636",
+		"name": "Bus001",
+		"mode": "broker",
+		"clientId": "Device001",
+		"certId": "9e09675250",
+		"region": "us-east-1"
+	}, {
+		"id": "fcf453b7.695678",
+		"type": "subflow",
+		"name": "AWSCertificateManager",
+		"info": "",
+		"in": [],
+		"out": []
+	}, {
+		"id": "1a9b70ee.465337",
+		"type": "http in",
+		"z": "fcf453b7.695678",
+		"name": "",
+		"url": "/aws/certs",
+		"method": "get",
+		"swaggerDoc": "",
+		"x": 115,
+		"y": 87,
+		"wires": [["63efdc43.df690c"]
+		]
+	}, {
+		"id": "63efdc43.df690c",
+		"type": "exec",
+		"z": "fcf453b7.695678",
+		"command": "ls ../awsCerts",
+		"addpay": true,
+		"append": "",
+		"useSpawn": "",
+		"name": "GetCertificates",
+		"x": 303,
+		"y": 86,
+		"wires": [["3e8a0a29.63283e"],[],[]
+		]
+	}, {
+		"id": "c14a4286.9deea",
+		"type": "http response",
+		"z": "fcf453b7.695678",
+		"name": "",
+		"x": 682,
+		"y": 87,
+		"wires": []
+	}, {
+		"id": "3e8a0a29.63283e",
+		"type": "function",
+		"z": "fcf453b7.695678",
+		"name": "convertToJSON",
+		"func": "//msg.payload = msg.payload.replace(/..\\/aws\\/certs\\//g,\"\").replace(/\\//g, \"\").replace(/\\r\\n/g, \"\\n\").split(\"\\n\");\n//return msg;\n\nvar files = msg.payload;\n\nfiles = files.replace(\":\",\"\");\nfiles = files.replace(\"../awsCerts\",\"\");\nfiles = files.replace(\"-certificate.pem.crt\", \"\");\nfiles = files.replace(\"-private.pem.key\",\"\");\nfiles = files.replace(\"-public.pem.key\",\"\");\nfiles = files.replace(\"root-CA.crt\",\"\");\n\nfiles = files.replace(/\\r\\n/g, \"\\n\");\nfiles = files.split(\"\\n\");\n\n\nvar uniqueKeys = files.filter(function(elem, pos) {\n    return files.indexOf(elem) == pos;\n})\n\n\nmsg.payload = uniqueKeys;\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 505,
+		"y": 88,
+		"wires": [["c14a4286.9deea"]
+		]
+	}, {
+		"id": "ba30738e.13cad8",
+		"type": "inject",
+		"z": "9ab87d77.4636",
+		"name": "CarDistance",
+		"topic": "/fptdrive/car_distance",
+		"payload": "",
+		"payloadType": "date",
+		"repeat": "",
+		"crontab": "",
+		"once": false,
+		"x": 97,
+		"y": 242,
+		"wires": [["eb7560ab.dfba4"]
+		]
+	}, {
+		"id": "cd203b7e.6aa468",
+		"type": "exec",
+		"z": "9ab87d77.4636",
+		"command": "./extcmds/car_distance.sh",
+		"addpay": true,
+		"append": "",
+		"useSpawn": false,
+		"name": "CarDistanceCmd",
+		"x": 451.6666259765625,
+		"y": 249.11111450195312,
+		"wires": [["ebababac.a08338"],[],[]
+		]
+	}, {
+		"id": "eb7560ab.dfba4",
+		"type": "function",
+		"z": "9ab87d77.4636",
+		"name": "NeedToChangeOnRPI",
+		"func": "var path = \"/Volumes/Work/Worksapce/java-workspace/samplecpp/imgs/sample\";\nvar id = ((Math.random()*100) % 4).toFixed(0);\nmsg.payload = path + id + \".jpg\";\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 264,
+		"y": 186,
+		"wires": [["cd203b7e.6aa468"]
+		]
+	}, {
+		"id": "5bb21393.b5865c",
+		"type": "subflow:fcf453b7.695678",
+		"z": "9ab87d77.4636",
+		"x": 115.55557250976562,
+		"y": 42.222206115722656,
+		"wires": []
+	}, {
+		"id": "18a0daf8.0d3e35",
+		"type": "aws-mqtt in",
+		"z": "9ab87d77.4636",
+		"device": "a6a2dce4.9e43a8",
+		"topic": "topic/#",
+		"x": 75,
+		"y": 640,
+		"wires": [["9b5e6fa6.c48418"]
+		]
+	}, {
+		"id": "829f2161.ce637",
+		"type": "aws-mqtt out",
+		"z": "9ab87d77.4636",
+		"device": "a6a2dce4.9e43a8",
+		"qos": "0",
+		"x": 832,
+		"y": 271,
+		"wires": []
+	}, {
+		"id": "ebababac.a08338",
+		"type": "function",
+		"z": "9ab87d77.4636",
+		"name": "CarDistanceMessage",
+		"func": "var payload = {\n    device_id: context.global.deviceId,\n    timestamp:new Date(),\n    distance_to_next:msg.payload.toString().replace(\"\\n\",\"\")\n};\n\nmsg.payload = payload;\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 619,
+		"y": 190,
+		"wires": [["829f2161.ce637"]
+		]
+	}, {
+		"id": "1cb33443.d42fe4",
+		"type": "debug",
+		"z": "9ab87d77.4636",
+		"name": "",
+		"active": false,
+		"console": "false",
+		"complete": "false",
+		"x": 536,
+		"y": 644,
+		"wires": []
+	}, {
 		"id": "9b5e6fa6.c48418",
 		"type": "function",
 		"z": "9ab87d77.4636",
@@ -10,6 +166,154 @@
 		"x": 336,
 		"y": 643,
 		"wires": [["1cb33443.d42fe4"]
+		]
+	}, {
+		"id": "97a30dac.8ea22",
+		"type": "catch",
+		"z": "9ab87d77.4636",
+		"name": "",
+		"scope": null,
+		"x": 335,
+		"y": 39,
+		"wires": [[]
+		]
+	}, {
+		"id": "d498e177.387838",
+		"type": "function",
+		"z": "9ab87d77.4636",
+		"name": "NeedToChangeOnRPI",
+		"func": "var path = \"/Volumes/Work/Worksapce/java-workspace/samplecpp/imgs/sample\";\nvar id = ((Math.random()*100) % 4).toFixed(0);\nmsg.payload = path + id + \".jpg\";\nreturn msg;\n",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 268,
+		"y": 348,
+		"wires": [["7469b59d.c6b52c"]
+		]
+	}, {
+		"id": "7469b59d.c6b52c",
+		"type": "exec",
+		"z": "9ab87d77.4636",
+		"command": "./extcmds/eye_blink.sh",
+		"addpay": true,
+		"append": "",
+		"useSpawn": "",
+		"name": "EyeBlinkCmd",
+		"x": 439,
+		"y": 299,
+		"wires": [["eb8f1906.607c9"],[],[]
+		]
+	}, {
+		"id": "eb8f1906.607c9",
+		"type": "function",
+		"z": "9ab87d77.4636",
+		"name": "EyeBlinkMessage",
+		"func": "var payload = {\n    device_id: context.global.deviceId,\n    timestamp: new Date(),\n    eye_blink: msg.payload.toString().replace(\"\\n\",\"\"),\n    yawn:0,\n    drowsiness:0\n};\n\nmsg.payload = payload;\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 629,
+		"y": 342,
+		"wires": [["829f2161.ce637"]
+		]
+	}, {
+		"id": "279c359d.1f7492",
+		"type": "websocket in",
+		"z": "9ab87d77.4636",
+		"name": "GPS",
+		"server": "",
+		"client": "4d2e8b2d.5ca344",
+		"x": 64,
+		"y": 112,
+		"wires": [["ca5d0d25.8805c"]
+		]
+	}, {
+		"id": "ca5d0d25.8805c",
+		"type": "function",
+		"z": "9ab87d77.4636",
+		"name": "GPSMessage",
+		"func": "var lat = msg.payload.lat || -1;\nvar lon = msg.payload.lon || -1;\n\nmsg.topic = \"topic/gps\";\nvar payload = {\n        device_id: context.global.deviceId,\n        timestamp:new Date(),\n        latitude: lat,\n        longitude: lon\n    };\n    \n\nmsg.payload = payload;\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 638,
+		"y": 110,
+		"wires": [["d6336609.adfb8", "829f2161.ce637"]
+		]
+	}, {
+		"id": "d6336609.adfb8",
+		"type": "debug",
+		"z": "9ab87d77.4636",
+		"name": "",
+		"active": false,
+		"console": "false",
+		"complete": "true",
+		"x": 806,
+		"y": 58,
+		"wires": []
+	}, {
+		"id": "eb50bcb.670f6c",
+		"type": "inject",
+		"z": "9ab87d77.4636",
+		"name": "EyeBlink",
+		"topic": "/fptdrive/face_eye_blink",
+		"payload": "",
+		"payloadType": "date",
+		"repeat": "",
+		"crontab": "",
+		"once": false,
+		"x": 85,
+		"y": 288,
+		"wires": [["d498e177.387838"]
+		]
+	}, {
+		"id": "2e8d116d.6d44d6",
+		"type": "inject",
+		"z": "9ab87d77.4636",
+		"name": "YawnDetection",
+		"topic": "/fptdrive/face_yawn",
+		"payload": "",
+		"payloadType": "date",
+		"repeat": "",
+		"crontab": "",
+		"once": false,
+		"x": 105,
+		"y": 490,
+		"wires": [["45513399.44fc34"]
+		]
+	}, {
+		"id": "45513399.44fc34",
+		"type": "function",
+		"z": "9ab87d77.4636",
+		"name": "YawnDetection",
+		"func": "//how to get image path??\n\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 273,
+		"y": 418,
+		"wires": [["e01d6cba.683488"]
+		]
+	}, {
+		"id": "e01d6cba.683488",
+		"type": "exec",
+		"z": "9ab87d77.4636",
+		"command": "./extcmds/yawn_detection.sh",
+		"addpay": true,
+		"append": "",
+		"useSpawn": "",
+		"name": "YawnDetectionCmd",
+		"x": 454,
+		"y": 481,
+		"wires": [["4df97a69.98e5dc"],[],[]
+		]
+	}, {
+		"id": "4df97a69.98e5dc",
+		"type": "function",
+		"z": "9ab87d77.4636",
+		"name": "YawnDetectionMessage",
+		"func": "\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 648,
+		"y": 404,
+		"wires": [[]
 		]
 	}
 ]
