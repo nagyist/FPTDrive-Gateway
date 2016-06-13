@@ -1,0 +1,15 @@
+[
+	{
+		"id": "9b5e6fa6.c48418",
+		"type": "function",
+		"z": "9ab87d77.4636",
+		"name": "",
+		"func": "var buffer = msg.payload;\njson = buffer.toString('utf8', 0, buffer.length - 1);\n\nif (json.lastIndexOf('}') != json.length - 1) {\n    json = json.substring(0, json.lastIndexOf('}') + 1);\n}\n\nmsg.payload = json;\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 336,
+		"y": 643,
+		"wires": [["1cb33443.d42fe4"]
+		]
+	}
+]
