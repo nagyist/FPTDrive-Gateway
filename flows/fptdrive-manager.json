@@ -1,0 +1,62 @@
+[
+	{
+		"id": "b83640a8.e88288",
+		"type": "subflow",
+		"name": "AWSCertificateManager",
+		"info": "",
+		"in": [],
+		"out": []
+	}, {
+		"id": "618dadcc.5abbe4",
+		"type": "http in",
+		"z": "b83640a8.e88288",
+		"name": "",
+		"url": "/aws/certs",
+		"method": "get",
+		"swaggerDoc": "",
+		"x": 115,
+		"y": 87,
+		"wires": [["91b3ce91.de8a58"]
+		]
+	}, {
+		"id": "91b3ce91.de8a58",
+		"type": "exec",
+		"z": "b83640a8.e88288",
+		"command": "ls ../awsCerts",
+		"addpay": true,
+		"append": "",
+		"useSpawn": "",
+		"name": "GetCertificates",
+		"x": 303,
+		"y": 86,
+		"wires": [["fa5148ef.e9dce"],[],[]
+		]
+	}, {
+		"id": "28f174fe.b21744",
+		"type": "http response",
+		"z": "b83640a8.e88288",
+		"name": "",
+		"x": 723,
+		"y": 73,
+		"wires": []
+	}, {
+		"id": "fa5148ef.e9dce",
+		"type": "function",
+		"z": "b83640a8.e88288",
+		"name": "convertToJSON",
+		"func": "//msg.payload = msg.payload.replace(/..\\/aws\\/certs\\//g,\"\").replace(/\\//g, \"\").replace(/\\r\\n/g, \"\\n\").split(\"\\n\");\n//return msg;\n\nvar files = msg.payload;\n\nfiles = files.replace(\":\",\"\");\nfiles = files.replace(\"../awsCerts\",\"\");\nfiles = files.replace(\"-certificate.pem.crt\", \"\");\nfiles = files.replace(\"-private.pem.key\",\"\");\nfiles = files.replace(\"-public.pem.key\",\"\");\nfiles = files.replace(\"root-CA.crt\",\"\");\n\nfiles = files.replace(/\\r\\n/g, \"\\n\");\nfiles = files.split(\"\\n\");\n\n\nvar uniqueKeys = files.filter(function(elem, pos) {\n    return files.indexOf(elem) == pos;\n})\n\n\nmsg.payload = uniqueKeys;\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 520,
+		"y": 73,
+		"wires": [["28f174fe.b21744"]
+		]
+	}, {
+		"id": "26d3737d.e97b74",
+		"type": "subflow:b83640a8.e88288",
+		"z": "fe357ff9.e27a2",
+		"x": 136,
+		"y": 42,
+		"wires": []
+	}
+]

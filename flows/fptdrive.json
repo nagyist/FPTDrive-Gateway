@@ -1,230 +1,160 @@
 [
 	{
-		"id": "9dd0a3f.2e598e",
+		"id": "1524d575.3e58c3",
 		"type": "websocket-client",
-		"z": "8bf310bd.5e247",
+		"z": "1c7390ed.7e5087",
 		"path": "ws://localhost:8001/",
 		"wholemsg": "false"
 	}, {
-		"id": "fe28906c.0a676",
+		"id": "bb5841a4.f0f5a",
 		"type": "aws-iot-device",
-		"z": "8bf310bd.5e247",
+		"z": "1c7390ed.7e5087",
 		"name": "Bus001",
 		"mode": "broker",
 		"clientId": "Device001",
 		"certId": "9e09675250",
 		"region": "us-east-1"
 	}, {
-		"id": "c56d4994.98171",
-		"type": "subflow",
-		"name": "AWSCertificateManager",
-		"info": "",
-		"in": [],
-		"out": []
-	}, {
-		"id": "5ac9cda.d6c54b4",
-		"type": "http in",
-		"z": "c56d4994.98171",
-		"name": "",
-		"url": "/aws/certs",
-		"method": "get",
-		"swaggerDoc": "",
-		"x": 115,
-		"y": 87,
-		"wires": [["c879fd33.9afc08"]
-		]
-	}, {
-		"id": "c879fd33.9afc08",
-		"type": "exec",
-		"z": "c56d4994.98171",
-		"command": "ls /home/pi/awsCerts",
-		"addpay": true,
-		"append": "",
-		"useSpawn": "",
-		"name": "GetCertificates",
-		"x": 303,
-		"y": 86,
-		"wires": [["92e2ede1.5c70e8"],[],[]
-		]
-	}, {
-		"id": "3ff2d482.73ea8c",
-		"type": "http response",
-		"z": "c56d4994.98171",
-		"name": "",
-		"x": 682,
-		"y": 87,
-		"wires": []
-	}, {
-		"id": "92e2ede1.5c70e8",
-		"type": "function",
-		"z": "c56d4994.98171",
-		"name": "convertToJSON",
-		"func": "//msg.payload = msg.payload.replace(/..\\/aws\\/certs\\//g,\"\").replace(/\\//g, \"\").replace(/\\r\\n/g, \"\\n\").split(\"\\n\");\n//return msg;\n\nvar files = msg.payload;\n\nfiles = files.replace(\":\",\"\");\nfiles = files.replace(\"../awsCerts\",\"\");\nfiles = files.replace(\"-certificate.pem.crt\", \"\");\nfiles = files.replace(\"-private.pem.key\",\"\");\nfiles = files.replace(\"-public.pem.key\",\"\");\nfiles = files.replace(\"root-CA.crt\",\"\");\n\nfiles = files.replace(/\\r\\n/g, \"\\n\");\nfiles = files.split(\"\\n\");\n\n\nvar uniqueKeys = files.filter(function(elem, pos) {\n    return files.indexOf(elem) == pos;\n})\n\n\nmsg.payload = uniqueKeys;\nreturn msg;",
-		"outputs": 1,
-		"noerr": 0,
-		"x": 505,
-		"y": 88,
-		"wires": [["3ff2d482.73ea8c", "13a9b380.806bcd"]
-		]
-	}, {
-		"id": "13a9b380.806bcd",
-		"type": "debug",
-		"z": "c56d4994.98171",
-		"name": "",
-		"active": true,
-		"console": "false",
-		"complete": "false",
-		"x": 672,
-		"y": 186.5,
-		"wires": []
-	}, {
-		"id": "11ef7d85.b77802",
-		"type": "subflow:c56d4994.98171",
-		"z": "8bf310bd.5e247",
-		"x": 148.55557250976562,
-		"y": 54.222206115722656,
-		"wires": []
-	}, {
-		"id": "d86b7a37.228498",
+		"id": "87245211.e552",
 		"type": "aws-mqtt in",
-		"z": "8bf310bd.5e247",
-		"device": "fe28906c.0a676",
+		"z": "1c7390ed.7e5087",
+		"device": "bb5841a4.f0f5a",
 		"topic": "/fptdrive/#",
-		"x": 93,
-		"y": 472,
-		"wires": [["7bf1f96d.49eb8"]
+		"x": 85.44442749023438,
+		"y": 455.77779388427734,
+		"wires": [["c68b139b.5a2af"]
 		]
 	}, {
-		"id": "89227463.cc986",
+		"id": "f3d8b52.07edac8",
 		"type": "aws-mqtt out",
-		"z": "8bf310bd.5e247",
-		"device": "fe28906c.0a676",
+		"z": "1c7390ed.7e5087",
+		"device": "bb5841a4.f0f5a",
 		"qos": "0",
-		"x": 686,
-		"y": 298,
+		"x": 678.4444274902344,
+		"y": 281.77779388427734,
 		"wires": []
 	}, {
-		"id": "9166d65b.4040e",
+		"id": "600c3efe.2e4538",
 		"type": "function",
-		"z": "8bf310bd.5e247",
+		"z": "1c7390ed.7e5087",
 		"name": "CarDistanceMessage",
 		"func": "var distance = -1;\n//var json = JSON.parse(msg.payload);\nvar distance = msg.payload.distance;\n\nvar payload = {\n    device_id: context.global.deviceId,\n    timestamp:new Date(),\n    distance_to_next:distance\n};\n\nvar disMsg = {\n    topic: \"/fptdrive/cardistance\"\n};\ndisMsg.payload = payload;\n\nmsg = disMsg;\nreturn msg;",
 		"outputs": "1",
 		"noerr": 0,
-		"x": 389,
-		"y": 228,
-		"wires": [["89227463.cc986", "c3a46e83.d506c"]
+		"x": 381.4444274902344,
+		"y": 211.77779388427734,
+		"wires": [["f3d8b52.07edac8", "bf7fd70d.7aa978"]
 		]
 	}, {
-		"id": "234e9a7f.7ddfd6",
+		"id": "a9738f14.eb5968",
 		"type": "debug",
-		"z": "8bf310bd.5e247",
+		"z": "1c7390ed.7e5087",
 		"name": "",
 		"active": true,
 		"console": "false",
 		"complete": "false",
-		"x": 696,
-		"y": 469,
+		"x": 688.4444274902344,
+		"y": 457.77779388427734,
 		"wires": []
 	}, {
-		"id": "7bf1f96d.49eb8",
+		"id": "c68b139b.5a2af",
 		"type": "function",
-		"z": "8bf310bd.5e247",
-		"name": "",
+		"z": "1c7390ed.7e5087",
+		"name": "ProcessingMessage",
 		"func": "var buffer = msg.payload;\njson = buffer.toString('utf8', 0, buffer.length - 1);\n\nif (json.lastIndexOf('}') != json.length - 1) {\n    json = json.substring(0, json.lastIndexOf('}') + 1);\n}\n\nmsg.payload = json;\nreturn msg;",
 		"outputs": 1,
 		"noerr": 0,
-		"x": 346,
-		"y": 473,
-		"wires": [["234e9a7f.7ddfd6"]
+		"x": 338.4444274902344,
+		"y": 456.77779388427734,
+		"wires": [["a9738f14.eb5968"]
 		]
 	}, {
-		"id": "b775e7ec.a7af2",
+		"id": "a283a223.32ed88",
 		"type": "catch",
-		"z": "8bf310bd.5e247",
+		"z": "1c7390ed.7e5087",
 		"name": "",
 		"scope": null,
-		"x": 368,
-		"y": 51,
+		"x": 92.44442749023438,
+		"y": 31.777793884277344,
 		"wires": [[]
 		]
 	}, {
-		"id": "6d2b6f5b.3ccc58",
+		"id": "ca6426af.e9c8c",
 		"type": "function",
-		"z": "8bf310bd.5e247",
+		"z": "1c7390ed.7e5087",
 		"name": "EyeBlinkMessage",
 		"func": "var payload = {\n    device_id: context.global.deviceId,\n    timestamp: new Date(),\n    eye_blink: 1,\n    yawn:0,\n    drowsiness:0\n};\n\nvar blinkMsg = {\n  topic: \"/fptdrive/face\"  \n};\n\nblinkMsg.payload = payload;\n\nreturn blinkMsg;",
 		"outputs": 1,
 		"noerr": 0,
-		"x": 387,
-		"y": 373,
-		"wires": [["c3a46e83.d506c", "89227463.cc986"]
+		"x": 379.4444274902344,
+		"y": 356.77779388427734,
+		"wires": [["bf7fd70d.7aa978", "f3d8b52.07edac8"]
 		]
 	}, {
-		"id": "c618e696.c4cae8",
+		"id": "89e7099d.28b6",
 		"type": "websocket in",
-		"z": "8bf310bd.5e247",
+		"z": "1c7390ed.7e5087",
 		"name": "GPS",
 		"server": "",
-		"client": "9dd0a3f.2e598e",
-		"x": 87,
-		"y": 135,
-		"wires": [["776c1440.16cc24"]
+		"client": "1524d575.3e58c3",
+		"x": 79.44442749023438,
+		"y": 118.77779388427734,
+		"wires": [["68372ac6.3e2774"]
 		]
 	}, {
-		"id": "776c1440.16cc24",
+		"id": "68372ac6.3e2774",
 		"type": "function",
-		"z": "8bf310bd.5e247",
+		"z": "1c7390ed.7e5087",
 		"name": "GPSMessage",
 		"func": "var json = JSON.parse(msg.payload);\n\nvar lat = json.lat || -1;\nvar lon = json.lon || -1;\n\nmsg.topic = \"/fptdrive/gps\";\nvar payload = {\n        device_id: context.global.deviceId,\n        timestamp:new Date(),\n        latitude: lat,\n        longitude: lon\n    };\n    \n\nmsg.payload = payload;\nvar now = new Date().getTime();\n\nif (undefined == context.global.gps_last_time) {\n    context.global.gps_last_time = now - 100000;\n}\n\nif (now - context.global.gps_last_time > 1000) {\n    context.global.gps_last_time = now;\n    return [msg, msg];\n} else {\n    //show debug only\n    return [null, msg];\n}\n",
 		"outputs": "2",
 		"noerr": 0,
-		"x": 371,
-		"y": 135,
-		"wires": [["c3a46e83.d506c", "89227463.cc986"],[]
+		"x": 363.4444274902344,
+		"y": 118.77779388427734,
+		"wires": [["bf7fd70d.7aa978", "f3d8b52.07edac8"],[]
 		]
 	}, {
-		"id": "c3a46e83.d506c",
+		"id": "bf7fd70d.7aa978",
 		"type": "debug",
-		"z": "8bf310bd.5e247",
+		"z": "1c7390ed.7e5087",
 		"name": "",
 		"active": true,
 		"console": "false",
 		"complete": "true",
-		"x": 676,
-		"y": 183,
+		"x": 668.4444274902344,
+		"y": 166.77779388427734,
 		"wires": []
 	}, {
-		"id": "6116137c.c5c8cc",
+		"id": "f4e87faa.95f17",
 		"type": "http in",
-		"z": "8bf310bd.5e247",
+		"z": "1c7390ed.7e5087",
 		"name": "/api/eyesblinked/",
 		"url": "/api/eyesblinked/",
 		"method": "get",
 		"swaggerDoc": "",
-		"x": 122.5,
-		"y": 379,
-		"wires": [["6d2b6f5b.3ccc58", "b0b8d7d7.7dd708"]
+		"x": 114.94442749023438,
+		"y": 362.77779388427734,
+		"wires": [["ca6426af.e9c8c", "6e6824d3.be2634"]
 		]
 	}, {
-		"id": "7471cad6.cc8084",
+		"id": "c1a07d9a.eb671",
 		"type": "http in",
-		"z": "8bf310bd.5e247",
+		"z": "1c7390ed.7e5087",
 		"name": "/api/cardistance/",
 		"url": "/api/cardistance/",
 		"method": "get",
 		"swaggerDoc": "",
-		"x": 118.5,
-		"y": 230,
-		"wires": [["9166d65b.4040e", "b0b8d7d7.7dd708"]
+		"x": 110.94442749023438,
+		"y": 213.77779388427734,
+		"wires": [["600c3efe.2e4538", "6e6824d3.be2634"]
 		]
 	}, {
-		"id": "b0b8d7d7.7dd708",
+		"id": "6e6824d3.be2634",
 		"type": "http response",
-		"z": "8bf310bd.5e247",
+		"z": "1c7390ed.7e5087",
 		"name": "httpoutput",
-		"x": 363.5,
-		"y": 300.5,
+		"x": 355.9444274902344,
+		"y": 284.27779388427734,
 		"wires": []
 	}
 ]

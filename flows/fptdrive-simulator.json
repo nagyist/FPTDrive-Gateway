@@ -1,0 +1,154 @@
+[
+  {
+    "id": "1159542a.ec52cc",
+    "type": "aws-iot-device",
+    "z": "afca5e85.e098d",
+    "name": "Bus001-Simulator",
+    "mode": "broker",
+    "clientId": "Device001Simu",
+    "certId": "9e09675250",
+    "region": "us-east-1"
+  },
+  {
+    "id": "188416a4.e6d421",
+    "type": "function",
+    "z": "afca5e85.e098d",
+    "name": "EyeBlinkMessage",
+    "func": "var payload = {\n    bus_id: context.global.deviceId,\n    device_id: context.global.deviceId,\n    timestamp: new Date(),\n    eye_blink: 1,\n    yawn:0,\n    drowsiness:0\n};\n\nvar blinkMsg = {\n  topic: \"/fptdrive/face\"  \n};\n\nblinkMsg.payload = payload;\n\nreturn blinkMsg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 353.0000305175781,
+    "y": 303,
+    "wires": [
+      [
+        "cdd76849.63c5c",
+        "6f16e4f.0be931c"
+      ]
+    ]
+  },
+  {
+    "id": "cdd76849.63c5c",
+    "type": "aws-mqtt out",
+    "z": "afca5e85.e098d",
+    "device": "1159542a.ec52cc",
+    "qos": "0",
+    "x": 664,
+    "y": 231,
+    "wires": []
+  },
+  {
+    "id": "4407678b.82123",
+    "type": "function",
+    "z": "afca5e85.e098d",
+    "name": "CarDistanceMessage",
+    "func": "var distance = Math.random()*60;\n\nvar payload = {\n    bus_id: context.global.deviceId,\n    device_id: context.global.deviceId,\n    timestamp:new Date(),\n    distance_to_next:distance\n};\n\nvar disMsg = {\n    topic: \"/fptdrive/cardistance\"\n};\ndisMsg.payload = payload;\n\nmsg = disMsg;\nreturn msg;",
+    "outputs": "1",
+    "noerr": 0,
+    "x": 360.0000305175781,
+    "y": 203,
+    "wires": [
+      [
+        "cdd76849.63c5c",
+        "6f16e4f.0be931c"
+      ]
+    ]
+  },
+  {
+    "id": "59ab1c5e.295afc",
+    "type": "catch",
+    "z": "afca5e85.e098d",
+    "name": "",
+    "scope": null,
+    "x": 319,
+    "y": 25.99999237060547,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "91acc7b7.e1f1b",
+    "type": "function",
+    "z": "afca5e85.e098d",
+    "name": "GPSMessage",
+    "func": "var polyline = [ [ 21.02849, 105.80414 ],\n  [ 21.02819, 105.8048 ],\n  [ 21.02817, 105.80498 ],\n  [ 21.02818, 105.80506 ],\n  [ 21.02833, 105.80526 ],\n  [ 21.02856, 105.8054 ],\n  [ 21.02874, 105.80557 ],\n  [ 21.02882, 105.80569 ],\n  [ 21.02887, 105.80582 ],\n  [ 21.02911, 105.80647 ],\n  [ 21.02919, 105.80675 ],\n  [ 21.02936, 105.80807 ],\n  [ 21.02956, 105.80935 ],\n  [ 21.02974, 105.81033 ],\n  [ 21.02999, 105.8116 ],\n  [ 21.03013, 105.81236 ],\n  [ 21.03022, 105.813 ],\n  [ 21.03133, 105.81335 ],\n  [ 21.03176, 105.8135 ],\n  [ 21.03283, 105.81383 ],\n  [ 21.03308, 105.81386 ],\n  [ 21.0332, 105.81385 ],\n  [ 21.03387, 105.8141 ],\n  [ 21.03476, 105.81443 ],\n  [ 21.03525, 105.81456 ],\n  [ 21.03567, 105.81472 ],\n  [ 21.03675, 105.81501 ],\n  [ 21.0371, 105.81513 ],\n  [ 21.0377, 105.81528 ],\n  [ 21.03927, 105.81578 ],\n  [ 21.04107, 105.81633 ],\n  [ 21.04194, 105.8166 ],\n  [ 21.04203, 105.81673 ],\n  [ 21.04212, 105.81697 ],\n  [ 21.0421, 105.81842 ],\n  [ 21.04215, 105.8185 ],\n  [ 21.04217, 105.81851 ],\n  [ 21.04217, 105.81871 ],\n  [ 21.04327, 105.81859 ],\n  [ 21.04351, 105.81855 ],\n  [ 21.04356, 105.81876 ],\n  [ 21.04363, 105.81929 ],\n  [ 21.04363, 105.81956 ],\n  [ 21.04358, 105.82029 ],\n  [ 21.04337, 105.82163 ],\n  [ 21.0433, 105.82196 ] ];\n\nif (typeof context.global.gps_polyline_index === 'undefined' || context.global.gps_polyline_index === NaN) {\n    context.global.gps_polyline_index = -1;\n}\n\ncontext.global.gps_polyline_index += 1;\ncontext.global.gps_polyline_index = context.global.gps_polyline_index % polyline.length;\n\nvar lat = polyline[context.global.gps_polyline_index][0];\nvar lon = polyline[context.global.gps_polyline_index][1];\n\nmsg.topic = \"/fptdrive/gps\";\nvar payload = {\n        bus_id: context.global.deviceId,\n        device_id: context.global.deviceId,\n        timestamp:new Date(),\n        latitude: lat,\n        longitude: lon\n    };\n    \nmsg.payload = payload;\n\nreturn msg;\n\n",
+    "outputs": "1",
+    "noerr": 0,
+    "x": 337.0000305175781,
+    "y": 102,
+    "wires": [
+      [
+        "6f16e4f.0be931c",
+        "cdd76849.63c5c"
+      ]
+    ]
+  },
+  {
+    "id": "6f16e4f.0be931c",
+    "type": "debug",
+    "z": "afca5e85.e098d",
+    "name": "",
+    "active": true,
+    "console": "false",
+    "complete": "true",
+    "x": 628,
+    "y": 167,
+    "wires": []
+  },
+  {
+    "id": "92d168ab.34c8c8",
+    "type": "inject",
+    "z": "afca5e85.e098d",
+    "name": "CarDistance",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "x": 114.55557250976562,
+    "y": 203.22219848632812,
+    "wires": [
+      [
+        "4407678b.82123"
+      ]
+    ]
+  },
+  {
+    "id": "d347b2bb.82b03",
+    "type": "inject",
+    "z": "afca5e85.e098d",
+    "name": "GPS",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "repeat": "1",
+    "crontab": "",
+    "once": false,
+    "x": 103.55557250976562,
+    "y": 103.22219848632812,
+    "wires": [
+      [
+        "91acc7b7.e1f1b"
+      ]
+    ]
+  },
+  {
+    "id": "b5c734a4.4569e",
+    "type": "inject",
+    "z": "afca5e85.e098d",
+    "name": "EyesBlink",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "repeat": "",
+    "crontab": "",
+    "once": false,
+    "x": 110.55557250976562,
+    "y": 302.2221984863281,
+    "wires": [
+      [
+        "188416a4.e6d421"
+      ]
+    ]
+  }
+]
