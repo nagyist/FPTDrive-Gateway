@@ -103,7 +103,7 @@ module.exports = function(RED) {
 				if ( typeof payload === "string") {
 					payload = JSON.parse(payload);
 				}
-				self.log('onMessage: ' + topic + ", " + payload.toString('utf8', 0, payload.length - 1));
+				//self.log('onMessage: ' + topic + ", " + payload.toString('utf8', 0, payload.length - 1));
 				self.send({
 					topic : topic,
 					payload : payload
@@ -160,16 +160,28 @@ module.exports = function(RED) {
 			var self = this;
 			this.awsIot.connect();
 			this.awsIot.listen(self);
-			self.log('Register: ' + this.awsIot.name + ", " + n.method);
-			this.awsIot.device.register(this.awsIot.name, {
-				ignoreDeltas : true,
-				persistentSubscribe : true
+			self.log('Register: ' + self.awsIot.name + ", " + n.method);
+			
+			self.awsIot.device.on("connect", function() {
+				self.awsIot.device.register(self.awsIot.name, {
+					ignoreDeltas : true,
+					persistentSubscribe : true
+				});
 			});
+			
+			self.awsIot.device.on("close", function() {
+				self.log('Unregister: ' + self.awsIot.name);
+				self.awsIot.device.unregister(self.awsIot.name);
+			});
+			
 			self.on("input", function(msg) {
 				if (n.method == 'get')
-					self.clientToken = this.awsIot.device[n.method](this.awsIot.name);
-				else
-					self.clientToken = this.awsIot.device[n.method](this.awsIot.name, msg.payload);
+					self.clientToken = self.awsIot.device.get(this.awsIot.name);
+				else if (n.method == 'update')
+					self.clientToken = self.awsIot.device.update(this.awsIot.name, msg.payload);//device[n.method]
+				else if (n.method == 'delete')
+					self.clientToken = self.awsIot.device.delete(this.awsIot.name, msg.payload);
+				//self.send([{clientToken:self.clientToken},null]);
 			});
 			this.awsIot.device.on('message', function(topic, payload) {
 				self.log('onMessage: ' + topic + ", " + payload.toString());

@@ -1,5 +1,12 @@
 [
 	{
+		"id": "c5f0373d.4b34",
+		"type": "subflow",
+		"name": "DeviceRegister",
+		"info": "",
+		"in": [],
+		"out": []
+	}, {
 		"id": "b83640a8.e88288",
 		"type": "subflow",
 		"name": "AWSCertificateManager",
@@ -57,6 +64,63 @@
 		"z": "fe357ff9.e27a2",
 		"x": 136,
 		"y": 42,
+		"wires": []
+	}, {
+		"id": "d752bafa.855d28",
+		"type": "inject",
+		"z": "fe357ff9.e27a2",
+		"name": "",
+		"topic": "",
+		"payload": "",
+		"payloadType": "date",
+		"repeat": "",
+		"crontab": "",
+		"once": true,
+		"x": 123.75,
+		"y": 183,
+		"wires": [["3ab7ca29.a10f3e", "128aa27d.f75066"]
+		]
+	}, {
+		"id": "3ab7ca29.a10f3e",
+		"type": "function",
+		"z": "fe357ff9.e27a2",
+		"name": "GlobalVariables",
+		"func": "context.global.SerialNumber = \"NHLE-L6MI-4GE4-ETEV\";\ncontext.global.DeviceId = \"ec87c2cc-ab87-35e1-bfd3-be0ea449fcd5\";\ncontext.global.RouteId = 13;\ncontext.global.RouteDistanceAlert = 50;\ncontext.global.busBrakingSuddently = [];\ncontext.global.busBrakingSuddentlyAccelerationAlert = -10;\ncontext.global.busSpeedUp = [];\ncontext.global.busSpeedUpAccelerationAlert = 10;\n\ncontext.global.busInfo = {\n    DeviceProperties: {\n            DeviceID: context.global.DeviceId,\n            HubEnabledState: true,\n            CreatedTime: \"2016-07-02T01:12:51.4267459Z\",\n            UpdatedTime: \"2016-07-02T01:45:30.658936Z\",\n            Manufacturer: \"FPT Software Ltd.,\",\n            ModelNumber: \"MD-365\",\n            SerialNumber: \"NHLE-L6MI-4GE4-ETEV\",\n            FirmwareVersion: \"1.86\",\n            Platform: \"Plat-64\",\n            Processor: \"i3-595\",\n            InstalledRAM: \"2GB\"\n        }\n}\n\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 292.0000305175781,
+		"y": 164.25,
+		"wires": [[]
+		]
+	}, {
+		"id": "128aa27d.f75066",
+		"type": "function",
+		"z": "fe357ff9.e27a2",
+		"name": "RoutesInfo",
+		"func": "polyline_decode = function(str, precision) {\n    var index = 0,\n        lat = 0,\n        lng = 0,\n        coordinates = [],\n        shift = 0,\n        result = 0,\n        byte = null,\n        latitude_change,\n        longitude_change,\n        factor = Math.pow(10, precision || 5);\n\n    // Coordinates have variable length when encoded, so just keep\n    // track of whether we've hit the end of the string. In each\n    // loop iteration, a single coordinate is decoded.\n    while (index < str.length) {\n\n        // Reset shift, result, and byte\n        byte = null;\n        shift = 0;\n        result = 0;\n\n        do {\n            byte = str.charCodeAt(index++) - 63;\n            result |= (byte & 0x1f) << shift;\n            shift += 5;\n        } while (byte >= 0x20);\n\n        latitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));\n\n        shift = result = 0;\n\n        do {\n            byte = str.charCodeAt(index++) - 63;\n            result |= (byte & 0x1f) << shift;\n            shift += 5;\n        } while (byte >= 0x20);\n\n        longitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));\n\n        lat += latitude_change;\n        lng += longitude_change;\n\n        coordinates.push([lat / factor, lng / factor]);\n    }\n\n    return coordinates;\n};\n\ncontext.global.routes_encoded = [\n    \"grm_CagvdS@~KEbGDtF?bEdBElMBjJMjAItC?pA?hC@vB@pAFdFt@fBTb@TRXIzDGdFQ|GIxECzEA`BX?lE@hC?lB?SgAOc@m@cB\",\n    \"}ik_Ck`tdSeA}BeDsGQOUImAEJ{FVsHNkBZkB|@}DjAsFl@aC]M_C}@wFaBKa@SQSEQKQYi@}@c@g@_DeDQ[E[Ek@?m@A{DyBDgDDUDwMEcH@G@ILODYFwG?m@@?r@@vC?dC\"\n];\ncontext.global.routes = [];\ncontext.global.routes.push(polyline_decode(context.global.routes_encoded[0]));\ncontext.global.routes.push(polyline_decode(context.global.routes_encoded[1]));\n\n\nmsg.payload = context.global.routes;\n\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 278.2500305175781,
+		"y": 202.5,
+		"wires": [["ea641ec3.ffd6"]
+		]
+	}, {
+		"id": "ea641ec3.ffd6",
+		"type": "debug",
+		"z": "fe357ff9.e27a2",
+		"name": "",
+		"active": false,
+		"console": "false",
+		"complete": "false",
+		"x": 514.5000610351562,
+		"y": 201.25001525878906,
+		"wires": []
+	}, {
+		"id": "434275b9.d12124",
+		"type": "subflow:c5f0373d.4b34",
+		"z": "fe357ff9.e27a2",
+		"x": 108,
+		"y": 89,
 		"wires": []
 	}
 ]
