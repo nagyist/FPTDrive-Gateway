@@ -1,5 +1,5 @@
 # FPTDriveDemo
-Node-red nodes for FPTDrive Dem0123456787
+Node-red nodes for FPTDrive Demo
 
 ##Flows
 symlink to FPTDriveGateway/flows/flows-fptdrive.json
