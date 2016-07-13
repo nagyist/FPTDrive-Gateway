@@ -1,16 +1,24 @@
 [
 	{
-		"type": "tab",
 		"id": "afca5e85.e098d",
+		"type": "tab",
 		"label": "FPTDrive-Simulator"
 	}, {
-		"type": "tab",
 		"id": "1c7390ed.7e5087",
+		"type": "tab",
 		"label": "FPT Drive"
 	}, {
-		"type": "tab",
 		"id": "bbc541b8.3038e",
+		"type": "tab",
 		"label": "FPTDriveManager"
+	}, {
+		"id": "d3f9a6d2.2e5df8",
+		"type": "tab",
+		"label": "API-Simulation"
+	}, {
+		"id": "54942583.f0fb04",
+		"type": "tab",
+		"label": "DeviceRegister"
 	}, {
 		"id": "5c70f8db.82bad8",
 		"type": "subflow",
@@ -19,7 +27,7 @@
 		"in": [
 			{
 				"x": 32.22216796875,
-				"y": 130.77781677246094,
+				"y": 81.77781677246094,
 				"wires": [
 					{
 						"id": "6ed098ad.bcb498"
@@ -34,7 +42,7 @@
 		"out": [
 			{
 				"x": 735.6666259765625,
-				"y": 132.3334503173828,
+				"y": 83.33345031738281,
 				"wires": [
 					{
 						"id": "316a3316.306e04",
@@ -126,6 +134,12 @@
 		"id": "2cb456a0.f360aa",
 		"type": "aws-config",
 		"z": "1c7390ed.7e5087"
+	}, {
+		"id": "54cc9b2a.17d8dc",
+		"type": "websocket-listener",
+		"z": "54942583.f0fb04",
+		"path": "/ws/gateway",
+		"wholemsg": "false"
 	}, {
 		"id": "87245211.e552",
 		"type": "aws-mqtt in",
@@ -452,9 +466,6 @@
 		"method": "GET",
 		"ret": "txt",
 		"url": "http://localhost:1880/api/eyesblinked/",
-		"certId": "",
-		"rejectUnauthorized": false,
-		"tlsClientAuthentication": false,
 		"x": 548.5714721679688,
 		"y": 174.28570556640625,
 		"wires": [["6f16e4f.0be931c"]
@@ -467,9 +478,6 @@
 		"method": "GET",
 		"ret": "txt",
 		"url": "http://localhost:1880/api/cardistance/",
-		"certId": "",
-		"rejectUnauthorized": false,
-		"tlsClientAuthentication": false,
 		"x": 547.1428833007812,
 		"y": 140.00001525878906,
 		"wires": [["6f16e4f.0be931c"]
@@ -490,11 +498,11 @@
 		"type": "function",
 		"z": "5c70f8db.82bad8",
 		"name": "CheckStopLongTime",
-		"func": "function distance(lat1, lon1, lat2, lon2, unit) {\n\tvar radlat1 = Math.PI * lat1/180;\n\tvar radlat2 = Math.PI * lat2/180;\n\tvar theta = lon1-lon2;\n\tvar radtheta = Math.PI * theta/180;\n\tvar dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);\n\tdist = Math.acos(dist);\n\tdist = dist * 180/Math.PI;\n\tdist = dist * 60 * 1.1515;\n\tif (unit==\"K\") { dist = dist * 1.609344; }\n\tif (unit==\"N\") { dist = dist * 0.8684; }\n\treturn dist;\n}\n\nvar payload = msg.payload;\n//console.log(JSON.stringify(payload));\nif (payload.speed > 0) {\n    context.global.busCurrentLocation = payload;\n    return null;\n} else {\n    if (typeof context.global.busCurrentLocation === 'undefined') {\n        context.global.busCurrentLocation = {\n            latitude: -1,\n            longitude: -1,\n            timestamp: new Date()\n        };\n    }\n    //1. Last available location with speed is zero\n    //2. Current location available\n    //3. Current speed is zero\n    //4. if current location is unavailable, bus current location is kept.\n    \n    //console.log(JSON.stringify(context.global.busCurrentLocation));\n    \n    if (context.global.busCurrentLocation.latitude > 0 && payload.latitude > 0) {\n        var dis = distance(payload.latitude, payload.longitude, \n                        context.global.busCurrentLocation.latitude, context.global.busCurrentLocation.longitude, \"K\");\n        if (dis < 0.001) {//1 meter\n            var diff = Math.abs(new Date() - new Date(context.global.busCurrentLocation.timestamp));\n            if (diff/1000 > 2) {\n                msg.topic = \"/fptdrive/tracking/stop/alert/\" + context.global.RouteId + \"/\" + context.global.DeviceId;\n                msg.type = \"stop\";\n                msg.payload = {diff:diff};\n    \n                return msg;\n            }\n        }\n    } else {\n        //dont have location - waive\n    }\n    \n    \n}\n\nreturn null;",
+		"func": "var fptdrive = context.global.fptdrive;\n\nvar payload = msg.payload;\n//console.log(JSON.stringify(payload));\nif (payload.speed > 0) {\n    context.global.busCurrentLocation = payload;\n    return null;\n} else {\n    if (typeof context.global.busCurrentLocation === 'undefined') {\n        context.global.busCurrentLocation = {\n            latitude: -1,\n            longitude: -1,\n            timestamp: new Date()\n        };\n    }\n    //1. Last available location with speed is zero\n    //2. Current location available\n    //3. Current speed is zero\n    //4. if current location is unavailable, bus current location is kept.\n    \n    //console.log(JSON.stringify(context.global.busCurrentLocation));\n    \n    if (context.global.busCurrentLocation.latitude > 0 && payload.latitude > 0) {\n        var dis = fptdrive.geo_distance(payload.latitude, payload.longitude, \n                        context.global.busCurrentLocation.latitude, context.global.busCurrentLocation.longitude, \"K\");\n        if (dis < 0.001) {//1 meter\n            var diff = Math.abs(new Date() - new Date(context.global.busCurrentLocation.timestamp));\n            if (diff/1000 > 2) {\n                msg.topic = \"/fptdrive/tracking/stop/alert/\" + context.global.RouteId + \"/\" + context.global.DeviceId;\n                msg.type = \"stop\";\n                msg.payload = {diff:diff};\n    \n                return msg;\n            }\n        }\n    } else {\n        //dont have location - waive\n    }\n    \n    \n}\n\nreturn null;",
 		"outputs": 1,
 		"noerr": 0,
 		"x": 201.22219848632812,
-		"y": 93.33338928222656,
+		"y": 44.33338928222656,
 		"wires": [["316a3316.306e04"]
 		]
 	}, {
@@ -557,7 +565,7 @@
 		"outputs": 1,
 		"noerr": 0,
 		"x": 210.99993896484375,
-		"y": 131.11111450195312,
+		"y": 82.11111450195312,
 		"wires": [["4d4032d1.4daf44"]
 		]
 	}, {
@@ -569,7 +577,7 @@
 		"outputs": 1,
 		"noerr": 0,
 		"x": 185.44436645507812,
-		"y": 169.22225952148438,
+		"y": 120.22225952148438,
 		"wires": [["9213d2b8.fb7c2"]
 		]
 	}, {
@@ -581,7 +589,7 @@
 		"outputs": 1,
 		"noerr": 0,
 		"x": 470.99993896484375,
-		"y": 93.33335876464844,
+		"y": 44.33335876464844,
 		"wires": [[]
 		]
 	}, {
@@ -593,7 +601,7 @@
 		"outputs": 1,
 		"noerr": 0,
 		"x": 463.77783203125,
-		"y": 130.77784729003906,
+		"y": 81.77784729003906,
 		"wires": [[]
 		]
 	}, {
@@ -605,7 +613,7 @@
 		"outputs": 1,
 		"noerr": 0,
 		"x": 474.111083984375,
-		"y": 169.55560302734375,
+		"y": 120.55560302734375,
 		"wires": [[]
 		]
 	}, {
@@ -680,7 +688,7 @@
 		"type": "function",
 		"z": "bbc541b8.3038e",
 		"name": "GlobalVariables",
-		"func": "context.global.SerialNumber = \"NHLE-L6MI-4GE4-ETEV\";\ncontext.global.DeviceId = \"ec87c2cc-ab87-35e1-bfd3-be0ea449fcd5\";\ncontext.global.RouteId = 13;\ncontext.global.RouteDistanceAlert = 50;\ncontext.global.busBrakingSuddently = [];\ncontext.global.busBrakingSuddentlyAccelerationAlert = -10;\ncontext.global.busSpeedUp = [];\ncontext.global.busSpeedUpAccelerationAlert = 10;\n\ncontext.global.busInfo = {\n    DeviceProperties: {\n            DeviceID: context.global.DeviceId,\n            HubEnabledState: true,\n            CreatedTime: \"2016-07-02T01:12:51.4267459Z\",\n            UpdatedTime: \"2016-07-02T01:45:30.658936Z\",\n            Manufacturer: \"FPT Software Ltd.,\",\n            ModelNumber: \"MD-365\",\n            SerialNumber: \"NHLE-L6MI-4GE4-ETEV\",\n            FirmwareVersion: \"1.86\",\n            Platform: \"Plat-64\",\n            Processor: \"i3-595\",\n            InstalledRAM: \"2GB\"\n        }\n}\n\nreturn msg;",
+		"func": "context.global.serverUrl = \"localhost:1880\"\ncontext.global.device = {DeviceStatus : \"INITIATED\", PinCode : \"123456\"};\n\ncontext.global.SerialNumber = \"NHLE-L6MI-4GE4-ETEV\";\ncontext.global.DeviceId = \"ec87c2cc-ab87-35e1-bfd3-be0ea449fcd5\";\ncontext.global.RouteId = 13;\ncontext.global.RouteDistanceAlert = 50;\ncontext.global.busBrakingSuddently = [];\ncontext.global.busBrakingSuddentlyAccelerationAlert = -10;\ncontext.global.busSpeedUp = [];\ncontext.global.busSpeedUpAccelerationAlert = 10;\n\ncontext.global.busInfo = {\n    DeviceProperties: {\n            DeviceID: context.global.DeviceId,\n            HubEnabledState: true,\n            CreatedTime: \"2016-07-02T01:12:51.4267459Z\",\n            UpdatedTime: \"2016-07-02T01:45:30.658936Z\",\n            Manufacturer: \"FPT Software Ltd.,\",\n            ModelNumber: \"MD-365\",\n            SerialNumber: \"NHLE-L6MI-4GE4-ETEV\",\n            FirmwareVersion: \"1.86\",\n            Platform: \"Plat-64\",\n            Processor: \"i3-595\",\n            InstalledRAM: \"2GB\"\n        }\n}\n\nreturn msg;",
 		"outputs": 1,
 		"noerr": 0,
 		"x": 296.0000305175781,
@@ -692,7 +700,7 @@
 		"type": "function",
 		"z": "bbc541b8.3038e",
 		"name": "RoutesInfo",
-		"func": "polyline_decode = function(str, precision) {\n    var index = 0,\n        lat = 0,\n        lng = 0,\n        coordinates = [],\n        shift = 0,\n        result = 0,\n        byte = null,\n        latitude_change,\n        longitude_change,\n        factor = Math.pow(10, precision || 5);\n\n    // Coordinates have variable length when encoded, so just keep\n    // track of whether we've hit the end of the string. In each\n    // loop iteration, a single coordinate is decoded.\n    while (index < str.length) {\n\n        // Reset shift, result, and byte\n        byte = null;\n        shift = 0;\n        result = 0;\n\n        do {\n            byte = str.charCodeAt(index++) - 63;\n            result |= (byte & 0x1f) << shift;\n            shift += 5;\n        } while (byte >= 0x20);\n\n        latitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));\n\n        shift = result = 0;\n\n        do {\n            byte = str.charCodeAt(index++) - 63;\n            result |= (byte & 0x1f) << shift;\n            shift += 5;\n        } while (byte >= 0x20);\n\n        longitude_change = ((result & 1) ? ~(result >> 1) : (result >> 1));\n\n        lat += latitude_change;\n        lng += longitude_change;\n\n        coordinates.push([lat / factor, lng / factor]);\n    }\n\n    return coordinates;\n};\n\ncontext.global.routes_encoded = [\n    \"grm_CagvdS@~KEbGDtF?bEdBElMBjJMjAItC?pA?hC@vB@pAFdFt@fBTb@TRXIzDGdFQ|GIxECzEA`BX?lE@hC?lB?SgAOc@m@cB\",\n    \"}ik_Ck`tdSeA}BeDsGQOUImAEJ{FVsHNkBZkB|@}DjAsFl@aC]M_C}@wFaBKa@SQSEQKQYi@}@c@g@_DeDQ[E[Ek@?m@A{DyBDgDDUDwMEcH@G@ILODYFwG?m@@?r@@vC?dC\"\n];\ncontext.global.routes = [];\ncontext.global.routes.push(polyline_decode(context.global.routes_encoded[0]));\ncontext.global.routes.push(polyline_decode(context.global.routes_encoded[1]));\n\n\nmsg.payload = context.global.routes;\n\nreturn msg;",
+		"func": "var fptdrive = context.global.fptdrive;\n\ncontext.global.routes_encoded = [\n    \"grm_CagvdS@~KEbGDtF?bEdBElMBjJMjAItC?pA?hC@vB@pAFdFt@fBTb@TRXIzDGdFQ|GIxECzEA`BX?lE@hC?lB?SgAOc@m@cB\",\n    \"}ik_Ck`tdSeA}BeDsGQOUImAEJ{FVsHNkBZkB|@}DjAsFl@aC]M_C}@wFaBKa@SQSEQKQYi@}@c@g@_DeDQ[E[Ek@?m@A{DyBDgDDUDwMEcH@G@ILODYFwG?m@@?r@@vC?dC\"\n];\n\ncontext.global.routes = [];\ncontext.global.routes.push(fptdrive.polyline_decode(context.global.routes_encoded[0]));\ncontext.global.routes.push(fptdrive.polyline_decode(context.global.routes_encoded[1]));\n\n\nmsg.payload = context.global.routes;\n\nreturn msg;",
 		"outputs": 1,
 		"noerr": 0,
 		"x": 282.2500305175781,
@@ -743,5 +751,205 @@
 		"x": 360,
 		"y": 43,
 		"wires": []
+	}, {
+		"id": "8d5a53d5.513f48",
+		"type": "http response",
+		"z": "d3f9a6d2.2e5df8",
+		"name": "",
+		"x": 1111.5714721679688,
+		"y": 255.99996948242188,
+		"wires": []
+	}, {
+		"id": "971bc186.6600c8",
+		"type": "http in",
+		"z": "d3f9a6d2.2e5df8",
+		"name": "",
+		"url": "/devices/ec87c2cc-ab87-35e1-bfd3-be0ea449fcd5/*",
+		"method": "get",
+		"swaggerDoc": "",
+		"x": 221.42868041992188,
+		"y": 52.85712432861328,
+		"wires": [["c9b55b2.46c0b28"]
+		]
+	}, {
+		"id": "c9b55b2.46c0b28",
+		"type": "function",
+		"z": "d3f9a6d2.2e5df8",
+		"name": "Extract URI",
+		"func": "if (msg.req.params.length === 0) return null;\n\nvar params = msg.req.params[0].toString().split(\"/\");\n\nif (params.length === 0) return null;\n\nmsg.method = params[0];\nmsg.param = params[1];\n\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 132.14291381835938,
+		"y": 215.00003051757812,
+		"wires": [["d6c6b352.2958e"]
+		]
+	}, {
+		"id": "d6c6b352.2958e",
+		"type": "switch",
+		"z": "d3f9a6d2.2e5df8",
+		"name": "API Controller",
+		"property": "method",
+		"propertyType": "msg",
+		"rules": [
+			{
+				"t": "eq",
+				"v": "init",
+				"vt": "str"
+			}, {
+				"t": "eq",
+				"v": "status",
+				"vt": "str"
+			}
+		],
+		"checkall": "true",
+		"outputs": 2,
+		"x": 323.57147216796875,
+		"y": 215.19033813476562,
+		"wires": [["8d478729.d5dd1"],["1c373b55.e2d9b5"]
+		]
+	}, {
+		"id": "8d478729.d5dd1",
+		"type": "switch",
+		"z": "d3f9a6d2.2e5df8",
+		"name": "Init Method",
+		"property": "param",
+		"propertyType": "msg",
+		"rules": [
+			{
+				"t": "else"
+			}
+		],
+		"checkall": "true",
+		"outputs": 1,
+		"x": 550.9524536132812,
+		"y": 121.19048309326172,
+		"wires": [["202287f4.5be21"]
+		]
+	}, {
+		"id": "1c373b55.e2d9b5",
+		"type": "switch",
+		"z": "d3f9a6d2.2e5df8",
+		"name": "Status Method",
+		"property": "payload",
+		"propertyType": "msg",
+		"rules": [
+			{
+				"t": "eq",
+				"v": "initiated",
+				"vt": "str"
+			}, {
+				"t": "eq",
+				"v": "registered",
+				"vt": "str"
+			}, {
+				"t": "eq",
+				"v": "key",
+				"vt": "str"
+			}, {
+				"t": "eq",
+				"v": "installed",
+				"vt": "str"
+			}, {
+				"t": "eq",
+				"v": "readytouse",
+				"vt": "str"
+			}, {
+				"t": "eq",
+				"v": "locked",
+				"vt": "str"
+			}, {
+				"t": "else"
+			}
+		],
+		"checkall": "true",
+		"outputs": 7,
+		"x": 561.8095703125,
+		"y": 311.9999694824219,
+		"wires": [["202287f4.5be21"],["6a5aebba.ad9c24"],["7ce11ce0.6cdbc4"],["3e8f2691.43763a"],["d7d5c8e7.2b851"],["60f95672.461d78"],["3a045660.f10ec2"]
+		]
+	}, {
+		"id": "202287f4.5be21",
+		"type": "function",
+		"z": "d3f9a6d2.2e5df8",
+		"name": "INITIATED",
+		"func": "msg.error = null;\nmsg.payload = {\n    status : \"INITIATED\",\n    pinCode : \"131313\"\n};\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 800.476318359375,
+		"y": 200.33334350585938,
+		"wires": [["8d5a53d5.513f48"]
+		]
+	}, {
+		"id": "6a5aebba.ad9c24",
+		"type": "function",
+		"z": "d3f9a6d2.2e5df8",
+		"name": "REGISTERED",
+		"func": "msg.error = null;\nmsg.payload = {\n    status : \"REGISTERED\"\n};\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 818.7619018554688,
+		"y": 237.6190185546875,
+		"wires": [["8d5a53d5.513f48"]
+		]
+	}, {
+		"id": "7ce11ce0.6cdbc4",
+		"type": "function",
+		"z": "d3f9a6d2.2e5df8",
+		"name": "SendDeviceCert",
+		"func": "msg.payload = {\n    \"DeviceId\": \"ec87c2cc-ab87-35e1-bfd3-be0ea449fcd5\",\n    \"AWSCertId\" : \"9e09675250\"\n};\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 820.3333129882812,
+		"y": 274.4761962890625,
+		"wires": [["8d5a53d5.513f48"]
+		]
+	}, {
+		"id": "3e8f2691.43763a",
+		"type": "function",
+		"z": "d3f9a6d2.2e5df8",
+		"name": "INSTALLED",
+		"func": "msg.error = null;\nmsg.payload = {\n    status : \"INSTALLED\"\n};\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 810.9049072265625,
+		"y": 312.1905212402344,
+		"wires": [["8d5a53d5.513f48"]
+		]
+	}, {
+		"id": "d7d5c8e7.2b851",
+		"type": "function",
+		"z": "d3f9a6d2.2e5df8",
+		"name": "IN-USED",
+		"func": "msg.error = null;\nmsg.payload = {\n    status : \"IN-USED\"\n};\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 801.619140625,
+		"y": 349.90478515625,
+		"wires": [["8d5a53d5.513f48"]
+		]
+	}, {
+		"id": "60f95672.461d78",
+		"type": "function",
+		"z": "d3f9a6d2.2e5df8",
+		"name": "LOCKED",
+		"func": "msg.error = null;\nmsg.payload = {\n    status : \"LOCKED\"\n};\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 800.6192016601562,
+		"y": 386.3333740234375,
+		"wires": [["8d5a53d5.513f48"]
+		]
+	}, {
+		"id": "3a045660.f10ec2",
+		"type": "function",
+		"z": "d3f9a6d2.2e5df8",
+		"name": "INVALID",
+		"func": "msg.error = \"INVALID\";\nmsg.payload = {\n    status : \"INVALID\"\n};\nreturn msg;",
+		"outputs": 1,
+		"noerr": 0,
+		"x": 801.4998779296875,
+		"y": 421.9999694824219,
+		"wires": [["8d5a53d5.513f48"]
+		]
 	}
 ]
