@@ -1,0 +1,19 @@
+{
+    "name"          : "node-red-node-azure-ampq",
+    "version"       : "0.0.1",
+    "description"   : "An azure-iot node for Node-RED",
+    "dependencies"  : {
+    },
+    "license": "Apache-2.0",
+    "keywords": [ "node-red", "azure-iot" ],
+    "node-red"      : {
+        "nodes"     : {
+            "azure-amqp": "azure-amqp.js"
+        }
+    },
+    "author": {
+        "name": "FPT-Software",
+        "email": "cuongdd1@fosft.com.vn",
+        "url": "http://fpt-software.vn"
+    }
+}
