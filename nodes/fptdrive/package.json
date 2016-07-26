@@ -7,6 +7,11 @@
         "type":"git",
         "url":"https://github.com/fpt-software/FPTDrive-Gateway/nodes/fptdrive"
     },
+    "dependencies": {},
+    "directories": {},
+     "files": [
+    	"fptdrive.js"
+  	],
     "license": "Apache-2.0",
     "keywords": [ "node-red", "aws-iot" ],
     "main" : "fptdrive.js",
