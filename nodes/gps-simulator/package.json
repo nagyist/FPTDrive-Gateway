@@ -1,0 +1,27 @@
+{
+    "name"          : "gpssimulator",
+    "version"       : "0.0.1",
+    "description"   : "A js lib for FPTDrive",
+
+    "repository" : {
+        "type":"git",
+        "url":"https://github.com/fpt-software/FPTDrive-Gateway/nodes/gps-simulator"
+    },
+    "dependencies": {
+        "geodesy": "^1.1.0"
+    },
+    "directories": {},
+     "files": [
+    	"movable-object.js",
+        "gps-simulator-data.js",
+        "gps-simulator.js"
+  	],
+    "license": "Apache-2.0",
+    "keywords": [ "node-red", "aws-iot" ],
+    "main" : "fptdrive.js",
+    "author": {
+        "name": "FPT-Software",
+        "email": "tuannv@fosft.com.vn",
+        "url": "http://fpt-software.vn"
+    }
+}
