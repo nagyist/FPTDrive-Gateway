@@ -1,5 +1,5 @@
 {
-    "name"          : "gpssimulator",
+    "name"          : "gps-simulator",
     "version"       : "0.0.1",
     "description"   : "A js lib for FPTDrive",
 
